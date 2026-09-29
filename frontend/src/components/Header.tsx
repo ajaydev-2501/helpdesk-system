@@ -40,6 +40,15 @@ export function Header() {
       ]
     : [{ name: 'Home', path: '/', icon: LayoutDashboard }];
 
+  // Only render header when user is authenticated and not on login/register pages
+  const isAuthPage = ['/login', '/register'].some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
+  );
+
+  if (!isAuthenticated || isAuthPage) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-white/85 border-b border-slate-200/80 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

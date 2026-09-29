@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   ShieldCheck,
   UserPlus,
+  LifeBuoy,
 } from 'lucide-react';
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,6 +63,18 @@ export function RegisterPage() {
       <div className="absolute bottom-4 right-1/4 w-80 h-80 bg-blue-500/5 blur-3xl rounded-full pointer-events-none -z-10" />
 
       <div className="w-full max-w-md space-y-6 relative z-10 animate-fade-in">
+        {/* Brand Home Navigation */}
+        <div className="flex justify-center">
+          <Link to="/" className="flex items-center gap-2.5 group transition-transform hover:scale-105 duration-200">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+              <LifeBuoy className="h-5 w-5" />
+            </div>
+            <span className="font-bold text-lg tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+              Mini<span className="text-blue-600">Helpdesk</span>
+            </span>
+          </Link>
+        </div>
+
         {/* Header Title Section */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold shadow-xs">
