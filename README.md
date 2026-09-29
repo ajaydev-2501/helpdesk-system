@@ -105,6 +105,9 @@ Install all dependencies across root, backend, frontend, and e2e workspaces:
 npm install
 ```
 
+> [!NOTE]
+> **Windows Compatibility**: The project uses `bcryptjs` for password hashing to eliminate native C++ compilation (`node-gyp` / `node-pre-gyp`) and Visual Studio build tool dependencies on Windows machines and Node.js v20/v22+.
+
 ### 2. Environment Configuration
 
 Copy the example environment files:
@@ -134,20 +137,31 @@ NODE_ENV=development
 VITE_API_URL=http://localhost:5000/api
 ```
 
-### 3. Database Migration & Seeding (Neon / PostgreSQL)
+### 3. Prisma Generation, Database Migration & Seeding
 
-Once your Neon `DATABASE_URL` is configured in `backend/.env`:
+> [!IMPORTANT]
+> **Mandatory Step**: You **must** run `npm run prisma:generate` before running `dev`, `build`, or `test`. TypeScript relies on the generated `@prisma/client` types (`Role`, `Status`, `Priority`, `User`, `TicketWhereInput`). If omitted, TypeScript will report `TS2305: Module '@prisma/client' has no exported member 'Role'`.
 
 ```bash
-# Apply migrations to your Neon database
-npm run prisma:migrate --workspace=backend
+# 1. Generate Prisma Client types
+npm run prisma:generate
 
-# Or deploy existing migrations in CI/production:
-npm run prisma:deploy --workspace=backend
+# 2. Apply database migrations to PostgreSQL (Neon)
+npm run prisma:migrate
+# (In CI or production environments, use: npm run prisma:deploy)
 
-# Seed initial admin and test user records:
-npm run db:seed --workspace=backend
+# 3. Seed default admin, user, and demo ticket data
+npm run db:seed
 ```
+
+#### Default Seed Credentials
+
+After running `npm run db:seed`, the database is populated with the following pre-configured credentials:
+
+| Role | Email | Password | Permissions |
+|---|---|---|---|
+| **Admin** | `admin@helpdesk.local` | `Admin@123456` | Full administrative access, ticket status updates, global analytics |
+| **User** | `user@helpdesk.local` | `User@123456` | Create tickets, view/edit personal tickets, filter personal dashboard |
 
 ---
 
@@ -162,6 +176,57 @@ npm run dev
 - **Frontend**: [http://localhost:5173](http://localhost:5173)
 - **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
 - **Swagger Documentation**: [http://localhost:5000/api/docs](http://localhost:5000/api/docs)
+
+### Individual Services
+
+```bash
+# Run backend only (NestJS with watch mode on port 5000)
+npm run dev:backend
+
+# Run frontend only (Vite dev server on port 5173)
+npm run dev:frontend
+```
+
+---
+
+## Troubleshooting & Common Issues
+
+### 1. `TS2305: Module '@prisma/client' has no exported member 'Role' / 'Status' / 'Priority'`
+- **Cause**: The Prisma Client artifacts have not been generated yet.
+- **Fix**: Run the generator script:
+  ```bash
+  npm run prisma:generate
+  ```
+  Then restart your dev server (`npm run dev`).
+
+### 2. `'concurrently' is not recognized as an internal or external command`
+- **Cause**: The root `npm install` failed or was interrupted (often due to native build tool errors like `node-pre-gyp`), leaving `node_modules/.bin` unpopulated.
+- **Fix**: Run a clean install:
+  ```powershell
+  Remove-Item -Recurse -Force node_modules, backend/node_modules, frontend/node_modules -ErrorAction SilentlyContinue
+  npm install
+  npm run prisma:generate
+  ```
+
+### 3. `Error: listen EADDRINUSE: address already in use :::5000` (or `:::5173`)
+- **Cause**: A previous Node.js process is still running and occupying port 5000 (backend) or 5173 (frontend).
+- **Fix (Windows PowerShell)**:
+  ```powershell
+  # Find process occupying port 5000
+  Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | Select-Object OwningProcess
+
+  # Terminate the process (replace <PID> with the OwningProcess ID)
+  Stop-Process -Id <PID> -Force
+  ```
+  *(Repeat for port 5173 if needed)*
+
+### 4. `TAR_ENTRY_ERROR ENOENT` / `EPERM: operation not permitted` during `npm install`
+- **Cause**: Windows file locks by open terminals, running watch processes, or antivirus software holding open files inside `node_modules`.
+- **Fix**: Stop all running terminal watch tasks (`Ctrl + C`), close VS Code / IDE terminals referencing the folder, and run:
+  ```powershell
+  npm cache clean --force
+  npm install
+  ```
 
 ---
 
@@ -184,16 +249,6 @@ npm run dev
 - **Throttling**: Rate limiting configured with `@nestjs/throttler` (default: 100 req/min global, 5 req/min on `/auth/register`, 10 req/min on `/auth/login`).
 - **Validation**: Strict global `ValidationPipe` with `whitelist: true`, `forbidNonWhitelisted: true`, and `transform: true`.
 
-### Individual Services
-
-```bash
-# Run backend only
-npm run dev:backend
-
-# Run frontend only
-npm run dev:frontend
-```
-
 ---
 
 ## Testing
@@ -202,15 +257,21 @@ npm run dev:frontend
 # Backend unit tests (Jest)
 npm run test
 
+# Backend test coverage
+npm run test:backend -- --coverage
+
 # End-to-end tests (Playwright)
 npm run test:e2e
 ```
 
 ---
 
-## Build
+## Build & Typecheck
 
 ```bash
+# Typecheck both frontend and backend
+npm run typecheck
+
 # Build both frontend and backend
 npm run build
 ```
