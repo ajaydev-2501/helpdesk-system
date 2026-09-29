@@ -4,8 +4,6 @@ node_modules/
 .pnp.js
 
 # Environment variables
-.env
-.env.local
 .env.*.local
 !.env.example
 
@@ -26,6 +24,7 @@ lerna-debug.log*
 # Coverage and testing
 coverage/
 *.lcov
+temp_auto_push.bat
 .nyc_output
 test-results/
 playwright-report/
@@ -33,9 +32,6 @@ blob-report/
 playwright/.cache/
 
 # IDE / Editor
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
 .idea/
 *.suo
 *.ntvs*
@@ -57,3 +53,6 @@ backend/prisma/*.db-journal
 .codex
 .cursor
 .gemini
+.gitignore
+branch_structure.json
+config.bat

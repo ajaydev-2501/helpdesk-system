@@ -1,0 +1,15 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feature/latest-changes",
+    "main"
+  ],
+  "parent": {
+    "feature/latest-changes": "main",
+    "main": null
+  },
+  "order": [
+    "main",
+    "feature/latest-changes"
+  ]
+}
