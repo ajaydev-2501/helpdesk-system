@@ -50,3 +50,10 @@ Thumbs.db
 # Prisma
 backend/prisma/*.db
 backend/prisma/*.db-journal
+
+.agent
+.agents
+.claude
+.codex
+.cursor
+.gemini
